@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loadout.gg - Build Your Ultimate Loadout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Bungee&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background elements */
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+            50% { transform: translateY(-20px) translateX(10px); opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 0;
+        }
+
+        .logo {
+            font-family: 'Bungee', cursive;
+            font-size: 4rem;
+            background: linear-gradient(45deg, #00ff00, #ff0080, #00ffff, #ffff00);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .tagline {
+            font-size: 1.3rem;
+            color: #00ff00;
+            opacity: 0.9;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .loadout-builder {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .weapon-section, .perk-section {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .weapon-section:hover, .perk-section:hover {
+            border-color: #ff0080;
+            box-shadow: 0 0 40px rgba(255, 0, 128, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .weapon-group {
+            margin-bottom: 25px;
+        }
+
+        .weapon-label {
+            display: block;
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .weapon-select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 10px;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .weapon-select:hover, .weapon-select:focus {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+            outline: none;
+        }
+
+        .weapon-select option {
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 10px;
+        }
+
+        .perk-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .perk-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .perk-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+        }
+
+        .perk-item.selected {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .perk-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .perk-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: #00ff00;
+        }
+
+        .perk-label {
+            font-size: 1rem;
+            color: #ffffff;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .operator-section {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ff0080;
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.2);
+            text-align: center;
+        }
+
+        .operator-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 10px;
+            color: #ff0080;
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .operator-input:focus {
+            outline: none;
+            border-color: #ff0080;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.4);
+        }
+
+        .deploy-btn {
+            background: linear-gradient(45deg, #ff0080, #00ff00);
+            border: none;
+            border-radius: 15px;
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #000;
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+        }
+
+        .deploy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.5);
+            background: linear-gradient(45deg, #00ff00, #ff0080);
+        }
+
+        .deploy-btn:active {
+            transform: translateY(0);
+        }
+
+        .loadout-result {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 2rem;
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .result-item {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border-left: 4px solid #00ffff;
+        }
+
+        .result-status {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #00ff00;
+            margin-top: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .perk-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 128, 0.2);
+            border: 1px solid #ff0080;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            color: #ff0080;
+        }
+
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffff00;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .leaderboard-title {
+            font-size: 1.5rem;
+            color: #ffff00;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+
+        .leaderboard-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .leaderboard-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #ffff00;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .loadout-builder {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="grid-overlay"></div>
+        <div class="floating-particles"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">Loadout.gg</h1>
+            <p class="tagline">Build your ultimate loadout... or die trying 💀</p>
+        </div>
+
+        <div class="loadout-builder">
+            <div class="weapon-section">
+                <h2 class="section-title">🔫 Weapons</h2>
+                
+                <div class="weapon-group">
+                    <label class="weapon-label">Primary Weapon:</label>
+                    <select class="weapon-select" name="primary">
+                        <option value="">Select Primary...</option>
+                        <option value="AK-47 Chaos Edition 🔥">AK-47 Chaos Edition 🔥</option>
+                        <option value="Sniper X200 'Headhunter' 🔭">Sniper X200 "Headhunter" 🔭</option>
+                        <option value="Noob Tube Deluxe 💥">Noob Tube Deluxe 💥</option>
+                        <option value="Slap Cannon Ultra ✋">Slap Cannon Ultra ✋</option>
+                        <option value="Rizz Rifle 9000 😏">Rizz Rifle 9000 😏</option>
+                        <option value="Cringe Blaster 🤮">Cringe Blaster 🤮</option>
+                        <option value="Main Character Energy Gun ⭐">Main Character Energy Gun ⭐</option>
+                    </select>
+                </div>
+
+                <div class="weapon-group">
+                    <label class="weapon-label">Secondary Weapon:</label>
+                    <select class="weapon-select" name="secondary">
+                        <option value="">Select Secondary...</option>
+                        <option value="Glock 9000 'Pocket Rocket' 🔫">Glock 9000 "Pocket Rocket" 🔫</option>
+                        <option value="Ban Hammer Supreme 🪓">Ban Hammer Supreme 🪓</option>
+                        <option value="Stun Bubbles Pro 🫧">Stun Bubbles Pro 🫧</option>
+                        <option value="Emotional Damage Dealer 💔">Emotional Damage Dealer 💔</option>
+                        <option value="Uno Reverse Card 🔄">Uno Reverse Card 🔄</option>
+                        <option value="Sussy Baka Blaster 📮">Sussy Baka Blaster 📮</option>
+                        <option value="Touch Grass Launcher 🌱">Touch Grass Launcher 🌱</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="perk-section">
+                <h2 class="section-title">🎯 Perks</h2>
+                <div class="perk-counter">
+                    <span id="perkCount">0</span>/3 Selected
+                </div>
+                
+                <div class="perk-grid">
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Double Jump 🚀">
+                        <label class="perk-label">Double Jump 🚀</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Wallhack Glasses 🕶️">
+                        <label class="perk-label">Wallhack Glasses 🕶️</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Giga Health 💪">
+                        <label class="perk-label">Giga Health 💪</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Emotional Damage Immunity 🧠">
+                        <label class="perk-label">Emotional Damage Immunity 🧠</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Speedrun Mode 🏃‍♂️">
+                        <label class="perk-label">Speedrun Mode 🏃‍♂️</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Infinite Ammo Cheat 🔄">
+                        <label class="perk-label">Infinite Ammo Cheat 🔄</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Plot Armor 🛡️">
+                        <label class="perk-label">Plot Armor 🛡️</label>
+                    </div>
+                    <div class="perk-item" onclick="togglePerk(this)">
+                        <input type="checkbox" class="perk-checkbox" name="perk" value="Sigma Grindset 😤">
+                        <label class="perk-label">Sigma Grindset 😤</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="operator-section">
+                <h2 class="section-title">🧑‍🎤 Operator</h2>
+                <input type="text" class="operator-input" placeholder="Enter your codename (e.g. ShadowRizz23)" maxlength="20">
+                <br>
+                <button class="deploy-btn" onclick="generateLoadout()">Deploy Loadout 🚀</button>
+            </div>
+        </div>
+
+        <div class="loadout-result" id="loadoutResult">
+            <!-- Results will be populated here -->
+        </div>
+
+        <div class="leaderboard">
+            <h3 class="leaderboard-title">🏆 Recent Operators</h3>
+            <div class="leaderboard-list">
+                <div class="leaderboard-item">🔥 xXNoScopeKingXx - AK-47 Chaos</div>
+                <div class="leaderboard-item">💀 ShadowRizz23 - Sniper X200</div>
+                <div class="leaderboard-item">⚡ CringeDestroyer - Slap Cannon</div>
+                <div class="leaderboard-item">🎯 MainCharacterNRG - Rizz Rifle</div>
+                <div class="leaderboard-item">🚀 DoubleJumpGod - Noob Tube</div>
+                <div class="leaderboard-item">🧠 EmotionalDamage - Ban Hammer</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.querySelector('.floating-particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Perk selection logic
+        let selectedPerks = 0;
+        const maxPerks = 3;
+
+        function togglePerk(perkItem) {
+            const checkbox = perkItem.querySelector('.perk-checkbox');
+            const isChecked = checkbox.checked;
+            
+            if (!isChecked && selectedPerks >= maxPerks) {
+                return; // Can't select more perks
+            }
+
+            checkbox.checked = !isChecked;
+            
+            if (checkbox.checked) {
+                selectedPerks++;
+                perkItem.classList.add('selected');
+            } else {
+                selectedPerks--;
+                perkItem.classList.remove('selected');
+            }
+
+            updatePerkCounter();
+            updatePerkAvailability();
+        }
+
+        function updatePerkCounter() {
+            document.getElementById('perkCount').textContent = selectedPerks;
+        }
+
+        function updatePerkAvailability() {
+            const perkItems = document.querySelectorAll('.perk-item');
+            perkItems.forEach(item => {
+                const checkbox = item.querySelector('.perk-checkbox');
+                if (!checkbox.checked && selectedPerks >= maxPerks) {
+                    item.classList.add('disabled');
+                } else {
+                    item.classList.remove('disabled');
+                }
+            });
+        }
+
+        // Generate loadout
+        function generateLoadout() {
+            const primary = document.querySelector('select[name="primary"]').value;
+            const secondary = document.querySelector('select[name="secondary"]').value;
+            const operatorName = document.querySelector('.operator-input').value;
+            const selectedPerkElements = document.querySelectorAll('input[name="perk"]:checked');
+            const perks = Array.from(selectedPerkElements).map(p => p.value);
+
+            // Validation
+            if (!primary || !secondary) {
+                alert('Select both primary and secondary weapons, soldier! 🎯');
+                return;
+            }
+
+            if (perks.length === 0) {
+                alert('Pick at least one perk or you\'ll get absolutely destroyed! 💀');
+                return;
+            }
+
+            // Generate random stats
+            const damage = Math.floor(Math.random() * 50) + 50;
+            const accuracy = Math.floor(Math.random() * 30) + 70;
+            const mobility = Math.floor(Math.random() * 40) + 60;
+            const survivalChance = Math.floor(Math.random() * 70) + 30;
+
+            // Create loadout display
+            const resultDiv = document.getElementById('loadoutResult');
+            resultDiv.innerHTML = `
+                <h2 class="result-title">💼 Loadout for ${operatorName || 'Unknown Operator'}</h2>
+                <div class="result-item">
+                    <strong>🔫 Primary:</strong> ${primary}
+                </div>
+                <div class="result-item">
+                    <strong>🔫 Secondary:</strong> ${secondary}
+                </div>
+                <div class="result-item">
+                    <strong>🎯 Perks:</strong> ${perks.join(', ')}
+                </div>
+                <div class="result-item">
+                    <strong>📊 Combat Stats:</strong><br>
+                    Damage: ${damage}/100 ${'🔥'.repeat(Math.floor(damage/20))}<br>
+                    Accuracy: ${accuracy}/100 ${'🎯'.repeat(Math.floor(accuracy/20))}<br>
+                    Mobility: ${mobility}/100 ${'⚡'.repeat(Math.floor(mobility/20))}<br>
+                    Survival: ${survivalChance}% ${'💪'.repeat(Math.floor(survivalChance/20))}
+                </div>
+                <div class="result-status">
+                    ⚙️ Status: ${getLoadoutStatus(damage, accuracy, mobility, survivalChance)}
+                </div>
+            `;
+
+            resultDiv.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+
+            // Add to leaderboard
+            addToLeaderboard(operatorName || 'Anonymous', primary);
+        }
+
+        function getLoadoutStatus(damage, accuracy, mobility, survival) {
+            const total = damage + accuracy + mobility + survival;
+            
+            if (total >= 350) return "Loadout absolutely cracked! You're built different 🔥";
+            if (total >= 300) return "Loadout ready to dominate 😤";
+            if (total >= 250) return "Decent loadout, might not die immediately 👍";
+            if (total >= 200) return "Questionable choices but we move 🤷‍♂️";
+            return "This loadout is sus... good luck bestie 💀";
+        }
+
+        function addToLeaderboard(name, weapon) {
+            const leaderboard = document.querySelector('.leaderboard-list');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'leaderboard-item';
+            newEntry.innerHTML = `🆕 ${name} - ${weapon.split(' ')[0]}`;
+            
+            // Add to top of leaderboard
+            leaderboard.insertBefore(newEntry, leaderboard.firstChild);
+            
+            // Remove oldest entry if more than 6
+            if (leaderboard.children.length > 6) {
+                leaderboard.removeChild(leaderboard.lastChild);
+            }
+        }
+
+        // Initialize perk counter
+        updatePerkCounter();
+    </script>
+</body>
+</html>
